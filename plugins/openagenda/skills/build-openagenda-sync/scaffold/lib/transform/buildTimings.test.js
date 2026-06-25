@@ -37,4 +37,22 @@ describe('buildTimings', () => {
     expect(timings[0].begin).toBe('2026-07-07T08:00:00.000Z');
     expect(timings[1].begin).toBe('2026-07-21T08:00:00.000Z');
   });
+  it('clamps an implausibly long span instead of exploding into many daily timings', () => {
+    const { timings, warnings } = buildTimings({ start: '2026-07-14T08:30:00.000Z', end: '2026-09-14T10:00:00.000Z' });
+    expect(timings).toHaveLength(1);
+    expect(timings[0].begin).toBe('2026-07-14T08:30:00.000Z');
+    expect(new Date(timings[0].end) - new Date(timings[0].begin)).toBeLessThanOrEqual(24 * 3600 * 1000);
+    expect(warnings.join(' ')).toMatch(/clamp/i);
+  });
+  it('drops duplicate and overlapping timings across occurrences', () => {
+    const { timings } = buildTimings({ occurrences: [
+      { start: '2026-07-18T08:30:00.000Z', end: '2026-07-18T10:00:00.000Z' },
+      { start: '2026-07-18T08:30:00.000Z', end: '2026-07-18T10:00:00.000Z' }, // exact dup
+      { start: '2026-07-18T09:00:00.000Z', end: '2026-07-18T11:00:00.000Z' }, // overlaps
+      { start: '2026-07-25T08:30:00.000Z', end: '2026-07-25T10:00:00.000Z' }, // distinct
+    ] });
+    expect(timings).toHaveLength(2);
+    expect(timings[0].begin).toBe('2026-07-18T08:30:00.000Z');
+    expect(timings[1].begin).toBe('2026-07-25T08:30:00.000Z');
+  });
 });
