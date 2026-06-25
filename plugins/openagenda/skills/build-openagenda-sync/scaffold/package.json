@@ -1,0 +1,23 @@
+{
+  "name": "albigeois-albi-sync",
+  "version": "1.0.0",
+  "description": "Synchronisation between the Ville d'Albi open-data agenda (CKAN) and OpenAgenda",
+  "type": "module",
+  "scripts": {
+    "download": "node --env-file=.env scripts/downloadFixtures.js",
+    "analyze": "node scripts/analyzeSource.js",
+    "sync": "node --env-file=.env scripts/sync.js",
+    "test": "vitest run"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "he": "^1.2.0",
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  }
+}

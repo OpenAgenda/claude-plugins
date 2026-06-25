@@ -1,0 +1,10 @@
+{
+  "name": "openagenda",
+  "version": "0.1.0",
+  "description": "Build OpenAgenda data integrations: a guided methodology + battle-tested scaffold for synchronising a data source into one or more OpenAgenda agendas (and, over time, one-shot imports and outward export).",
+  "author": {
+    "name": "OpenAgenda",
+    "url": "https://openagenda.com"
+  },
+  "keywords": ["openagenda", "sync", "integration", "events", "agenda"]
+}
