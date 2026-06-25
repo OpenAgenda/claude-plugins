@@ -1,0 +1,24 @@
+{
+  "name": "@openagenda/claude-plugins",
+  "version": "0.1.0",
+  "description": "OpenAgenda integration SDK + Claude Code plugins (marketplace).",
+  "type": "module",
+  "exports": {
+    ".": "./sdk/index.js",
+    "./oa/getAccessToken": "./sdk/oa/getAccessToken.js",
+    "./oa/setEvent": "./sdk/oa/setEvent.js",
+    "./oa/setLocation": "./sdk/oa/setLocation.js",
+    "./oa/removeAgendaEvent": "./sdk/oa/removeAgendaEvent.js",
+    "./oa/listAllAgendaEvents": "./sdk/oa/listAllAgendaEvents.js",
+    "./oa/getAgendaSchema": "./sdk/oa/getAgendaSchema.js",
+    "./oa/fetchImage": "./sdk/oa/fetchImage.js",
+    "./state": "./sdk/state.js",
+    "./transform/text": "./sdk/transform/text.js",
+    "./transform/media": "./sdk/transform/media.js",
+    "./transform/buildTimings": "./sdk/transform/buildTimings.js",
+    "./transform/mergeEvents": "./sdk/transform/mergeEvents.js",
+    "./transform/filter": "./sdk/transform/filter.js"
+  },
+  "engines": { "node": ">=20.0.0" },
+  "dependencies": { "turndown": "^7.2.0", "he": "^1.2.0" }
+}
