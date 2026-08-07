@@ -37,7 +37,16 @@ Read this before building. Each entry cost a real debugging session.
   schema lists no field as mandatory → `location.required`. Skip events with no
   resolvable location instead of erroring on every run.
 - `registration` link values must be real URLs (`link.invalid` otherwise).
-- Timings must be ≤ 24h each → split multi-day spans per day.
+- Timings must be ≤ 24h each → split multi-day spans per day. Mind the DST
+  fall-back day: a 00:00–23:59 local window really lasts 24h59 there and gets
+  the whole event rejected (`diffExceeded`) — clamp each timing's real duration.
+- Ext-id VALUES are capped at 100 chars (`string.toolong`). Derived values
+  (e.g. `name|address` location keys) can exceed it — keep a readable prefix
+  and append a hash of the full key.
+- `setLocation` without coordinates 400s with "geocoder didn't find address"
+  when the address doesn't resolve (source typos, venue names as addresses).
+  Retry with fallback coordinates (e.g. the town centre) rather than losing
+  every event at that venue.
 
 ## CKAN sources (Ville d'Albi)
 - Private datasets need the JWT in the `Authorization` header. Resources are JSON
