@@ -45,6 +45,8 @@ const oa = {
 ## First run
 `yarn install` → `yarn download` → `yarn analyze` → `node --env-file=.env scripts/sync.js --dry-run`
 → `… --limit=5` (to a **test** agenda) → verify in the OA admin → full run → run
-again (idempotency) → promote to production.
+again (idempotency) → quality control (compare published events against the
+source — see the parent skill's `reference/quality-control.md`) → promote to
+production.
 
 See the parent skill's `reference/pitfalls.md` before you start.

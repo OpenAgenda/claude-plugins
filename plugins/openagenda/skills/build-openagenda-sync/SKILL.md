@@ -9,7 +9,7 @@ A synchronisation pulls events from a source (a CKAN portal, a ticketing API,
 a tourism database…), maps them to the OpenAgenda event shape, and upserts them
 into one or more OpenAgenda agendas — incrementally and idempotently.
 
-Follow three steps. Each ends at a human-review checkpoint. **After every
+Follow four steps. Each ends at a human-review checkpoint. **After every
 checkpoint, write what you learned back into `reference/`** — this skill is a
 living document; the first project (albigeois) seeded it, every project sharpens
 it.
@@ -106,11 +106,35 @@ Goal: a safe, idempotent sync you can run repeatedly.
    state. Flags: `--dry-run`, `--reconcile`, `--limit=N`.
 3. **Run order:** `--dry-run` → bounded `--limit=5` real run to the **test**
    agenda → verify images/locations/dates in the admin → full run → run again to
-   confirm idempotency (mostly `unchanged`) → promote.
+   confirm idempotency (mostly `unchanged`) → Step 4 quality control → promote.
 
 **Checkpoint:** the live run is where the real bugs appear (the source's quirks,
 the agenda's real validation). Fix them, and record each one in
 `reference/pitfalls.md`.
+
+---
+
+## Step 4 — Quality control (compare published vs source)
+
+Goal: prove the *published* events say what the *source* says — a green run only
+proves the API accepted the payloads. Full method: `reference/quality-control.md`.
+
+1. **Pick the baseline**, in priority order: the source's **public event page**
+   when one exists → the raw source record from `fixtures/` → the site referenced
+   in the event's registration/keyed data.
+2. **Sample deliberately, not randomly** (8–12 events): cover every risky
+   transform path — a merged multi-occurrence event, a venue-resolved location,
+   a defaulted field, an uploaded image, an HTML-heavy description, a split
+   multi-day timing — plus one plain control event.
+3. **Compare field by field** on the public agenda page (what a visitor sees):
+   title, description fidelity, timing count and datetimes, location and map pin,
+   image, links, additional-field values, price.
+4. **Classify each discrepancy**: sync bug (fix, re-run, re-check), source data
+   issue (report upstream, don't patch the transform), or accepted transform
+   choice (document it). Write the result to a short `QC.md` in the project.
+
+**Checkpoint:** a human reviews `QC.md` before the sync is promoted to
+production.
 
 ---
 
@@ -119,6 +143,8 @@ the agenda's real validation). Fix them, and record each one in
 - `reference/openagenda-api.md` — auth, ext-id upsert, **image upload**, the
   events read-back, schema discovery, required-by-structure fields.
 - `reference/source-analysis.md` — the Step-1 checklist in full.
+- `reference/quality-control.md` — the Step-4 published-vs-source comparison in
+  full (baselines, sample design, checklist, verdicts).
 - `reference/pitfalls.md` — accumulated gotchas (read this first; it will save you
   a live debugging session).
 
