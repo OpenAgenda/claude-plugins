@@ -33,6 +33,9 @@ source-specific pieces. Everything here runs and is tested (`yarn test`).
 - `lib/transform/filter.js` — publication/exclusion rules.
 - `scripts/{downloadFixtures,analyzeSource,sync}.js` — change the dataset names
   and the SDK import; the sync.js adapter wiring is generic.
+- If the Step-1 scraping gap evaluation said yes: the scraper is an enrichment
+  step in your `SourceSDK.js`, its pages snapshotted into `fixtures/` like every
+  other read, and fetched incrementally at sync time (new/changed events only).
 
 ## Wiring the sync.js adapter (the one integration seam)
 `syncCore` is pure and takes an injected `oa` adapter:

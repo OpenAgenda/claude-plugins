@@ -49,10 +49,20 @@ Goal: know exactly what you're mapping before you write a transform.
    `buildTimings` expand them). Pick a stable `extId` for the merged event (the
    smallest member id, or a content hash).
 
+6. **Scraping gap evaluation.** If important fields are missing or degraded in
+   the source data (image, **image credits**, timings, location, title,
+   description, registration information…), check whether the
+   source's *public event pages* carry them: identify the website, find the
+   agenda and event pages, work out how event URLs are built from source-data
+   fields, and diff page content against the data. Follow the "Scraping gap
+   evaluation" checklist in `reference/source-analysis.md`, and bring the
+   resulting gap table to the checkpoint — the user decides whether a scraping
+   enrichment step is worth adding to the pipeline.
+
 `scripts/analyzeSource.js` prints a coverage report (counts, with-image,
 with-location, excluded, **multi-occurrence groups / redundant records**).
-**Checkpoint:** confirm the mapping strategy, the merge decision, and the
-`extId` key before writing transforms.
+**Checkpoint:** confirm the mapping strategy, the merge decision, the
+`extId` key, and the scrape/no-scrape decision before writing transforms.
 
 ---
 
