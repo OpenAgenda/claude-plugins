@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { createAlbiSDK } from '../lib/AlbiSDK.js';
+import { createSourceSDK } from '../lib/SourceSDK.js';
 import { runSync } from '../lib/syncCore.js';
 import { loadState, saveState } from '../lib/state.js';
 import { EXT_KEY } from '../lib/transform/constants.js';
@@ -20,7 +20,7 @@ const useTest = args.has('--test');
 const agendaUID = useTest ? process.env.TEST_AGENDA_UID : process.env.AGENDA_UID;
 const secret = useTest ? process.env.TEST_API_SECRET : process.env.API_SECRET;
 
-const sdk = createAlbiSDK({ key: process.env.ALBI_KEY, base: process.env.ALBI_API_BASE });
+const sdk = createSourceSDK({ key: process.env.ALBI_KEY, base: process.env.ALBI_API_BASE });
 const source = await sdk.loadAll();
 
 const getToken = createAccessTokenGetter(secret);
