@@ -127,5 +127,7 @@ the agenda's real validation). Fix them, and record each one in
 `scaffold/` is an adapt-and-copy starting point proven by the albigeois sync.
 - Copy verbatim, rarely change: `utils/oa/*`, `lib/state.js`, `lib/syncCore.js`,
   `lib/transform/{text,media,buildTimings}.js`.
-- Rewrite per source: `lib/SourceSDK.js`, `lib/transform/{mapEvent,mapLocation,
-  constants,filter}.js`, the dataset names in `scripts/*`.
+- Rewrite per source: `lib/SourceSDK.js` (the seam — ships re-exporting
+  `lib/AlbiSDK.js`, the Albi worked example; replace the re-export with your
+  client), `lib/transform/{mapEvent,mapLocation,constants,filter}.js`, the
+  dataset names in `scripts/*`.

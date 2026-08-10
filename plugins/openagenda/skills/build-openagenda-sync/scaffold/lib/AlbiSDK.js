@@ -1,3 +1,9 @@
+// SAMPLE source client — the Ville d'Albi (CKAN) sync kept as a working
+// reference. Nothing imports this directly except SourceSDK.js (the seam the
+// scripts use) and its test. When adapting the scaffold, don't edit this file:
+// write your own client in SourceSDK.js and use this one as inspiration.
+// See scaffold/README.md.
+
 function indexById(obj) {
   const map = new Map();
   const items = Array.isArray(obj) ? obj : Object.values(obj || {});

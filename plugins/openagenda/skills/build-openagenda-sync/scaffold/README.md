@@ -15,9 +15,11 @@ source-specific pieces. Everything here runs and is tested (`yarn test`).
   image-url cleanup, multi-day timing split.
 
 ## Rewrite per source
-- `lib/AlbiSDK.js` → **your `SourceSDK.js`**: the source client (auth, fetch,
-  pagination, lookup-table preloading). The exported `loadAll()` must return
-  `{ events: [...], <lookupMaps> }`.
+- `lib/SourceSDK.js` — **the source-client seam** the scripts import. It ships
+  re-exporting `lib/AlbiSDK.js` (the Albi implementation, kept as a worked
+  example) so everything runs out of the box. Replace the re-export with your
+  own client (auth, fetch, pagination, lookup-table preloading); the exported
+  factory's `loadAll()` must return `{ events: [...], <lookupMaps> }`.
 - `lib/transform/mapEvent.js` — assemble the OA event from a source record. Keep
   the shape `{ extId, oa, location, transform }`; keep the `_imageUrl` annotation
   (syncCore fetches + uploads it) and the registration URL validation.
