@@ -10,7 +10,11 @@ source-specific pieces. Everything here runs and is tested (`yarn test`).
   getAgendaSchema, fetchImage.
 - `lib/state.js` — stateful registry (load/getBucket/save/contentHash).
 - `lib/syncCore.js` — orchestrator (filter → map → upsert location → upsert event
-  → reconcile deletions from OA → save state; `--dry-run`/`--reconcile`/`--limit`).
+  → reconcile deletions from OA → save state; `--dry-run`/`--reconcile`/`--limit`),
+  instrumented per `reference/logging.md` (reasoned line for every drop/write/
+  deletion/error, keyed by ext-id).
+- `lib/logger.js` — `@openagenda/logs` init (console on by default, InsightOps
+  when `LOGS_TOKEN` is set). Only the `PREFIX` constant changes per project.
 - `lib/transform/{text,media,buildTimings}.js` — html→text/markdown, `;`-list +
   image-url cleanup, multi-day timing split.
 
@@ -48,5 +52,11 @@ const oa = {
 `yarn install` → `yarn download` → `yarn analyze` → `node --env-file=.env scripts/sync.js --dry-run`
 → `… --limit=5` (to a **test** agenda) → verify in the OA admin → full run → run
 again (idempotency) → promote to production.
+
+## Logging
+All diagnostics go through `lib/logger.js` (`@openagenda/logs`). Console output
+is on by default (`DEBUG=albi-sync:*` to narrow it); set `LOGS_TOKEN` in
+production to ship `info`+ to InsightOps (EU) as structured, LEQL-queryable
+JSON. What to log and why: the parent skill's `reference/logging.md`.
 
 See the parent skill's `reference/pitfalls.md` before you start.
