@@ -1,6 +1,6 @@
 {
   "name": "@openagenda/claude-plugins",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "OpenAgenda integration SDK + Claude Code plugins (marketplace).",
   "type": "module",
   "exports": {
@@ -19,6 +19,11 @@
     "./transform/mergeEvents": "./sdk/transform/mergeEvents.js",
     "./transform/filter": "./sdk/transform/filter.js"
   },
-  "engines": { "node": ">=20.0.0" },
-  "dependencies": { "turndown": "^7.2.0", "he": "^1.2.0" }
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "he": "^1.2.0",
+    "turndown": "^7.2.0"
+  }
 }

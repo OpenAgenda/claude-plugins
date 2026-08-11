@@ -10,14 +10,20 @@ source-specific pieces. Everything here runs and is tested (`yarn test`).
   getAgendaSchema, fetchImage.
 - `lib/state.js` — stateful registry (load/getBucket/save/contentHash).
 - `lib/syncCore.js` — orchestrator (filter → map → upsert location → upsert event
-  → reconcile deletions from OA → save state; `--dry-run`/`--reconcile`/`--limit`).
+  → reconcile deletions from OA → save state; `--dry-run`/`--reconcile`/`--limit`),
+  instrumented per `reference/logging.md` (reasoned line for every drop/write/
+  deletion/error, keyed by ext-id).
+- `lib/logger.js` — `@openagenda/logs` init (console on by default, InsightOps
+  when `LOGS_TOKEN` is set). Only the `PREFIX` constant changes per project.
 - `lib/transform/{text,media,buildTimings}.js` — html→text/markdown, `;`-list +
   image-url cleanup, multi-day timing split.
 
 ## Rewrite per source
-- `lib/AlbiSDK.js` → **your `SourceSDK.js`**: the source client (auth, fetch,
-  pagination, lookup-table preloading). The exported `loadAll()` must return
-  `{ events: [...], <lookupMaps> }`.
+- `lib/SourceSDK.js` — **the source-client seam** the scripts import. It ships
+  re-exporting `lib/AlbiSDK.js` (the Albi implementation, kept as a worked
+  example) so everything runs out of the box. Replace the re-export with your
+  own client (auth, fetch, pagination, lookup-table preloading); the exported
+  factory's `loadAll()` must return `{ events: [...], <lookupMaps> }`.
 - `lib/transform/mapEvent.js` — assemble the OA event from a source record. Keep
   the shape `{ extId, oa, location, transform }`; keep the `_imageUrl` annotation
   (syncCore fetches + uploads it) and the registration URL validation.
@@ -27,6 +33,9 @@ source-specific pieces. Everything here runs and is tested (`yarn test`).
 - `lib/transform/filter.js` — publication/exclusion rules.
 - `scripts/{downloadFixtures,analyzeSource,sync}.js` — change the dataset names
   and the SDK import; the sync.js adapter wiring is generic.
+- If the Step-1 scraping gap evaluation said yes: the scraper is an enrichment
+  step in your `SourceSDK.js`, its pages snapshotted into `fixtures/` like every
+  other read, and fetched incrementally at sync time (new/changed events only).
 
 ## Wiring the sync.js adapter (the one integration seam)
 `syncCore` is pure and takes an injected `oa` adapter:
@@ -48,5 +57,11 @@ const oa = {
 again (idempotency) → quality control (compare published events against the
 source — see the parent skill's `reference/quality-control.md`) → promote to
 production.
+
+## Logging
+All diagnostics go through `lib/logger.js` (`@openagenda/logs`). Console output
+is on by default (`DEBUG=albi-sync:*` to narrow it); set `LOGS_TOKEN` in
+production to ship `info`+ to InsightOps (EU) as structured, LEQL-queryable
+JSON. What to log and why: the parent skill's `reference/logging.md`.
 
 See the parent skill's `reference/pitfalls.md` before you start.

@@ -4,6 +4,9 @@ import { makeSubcategoryFilter } from './transform/filter.js';
 import { EXCLUDED_SUBCATEGORIES } from './transform/constants.js';
 import { getBucket, contentHash } from './state.js';
 import { mergeSourceEvents } from './transform/mergeEvents.js';
+import logs from './logger.js';
+
+const log = logs('sync');
 
 function stripAnnotations(oa) {
   const clean = {};
@@ -18,7 +21,11 @@ export async function runSync({ source, oa, state, agendaUID, options = {} }) {
   const stats = { created: 0, updated: 0, unchanged: 0, deleted: 0, skipped: 0, excluded: 0, errors: 0, deletionsSkipped: 0 };
 
   let events = mergeSourceEvents(source.events).filter((e) => {
-    if (!keep(e, source.poiMap)) { stats.excluded += 1; return false; }
+    if (!keep(e, source.poiMap)) {
+      stats.excluded += 1;
+      log.debug('event excluded by filter', { sourceId: e.id });
+      return false;
+    }
     return true;
   });
   if (limit) events = events.slice(0, limit);
@@ -28,8 +35,16 @@ export async function runSync({ source, oa, state, agendaUID, options = {} }) {
 
   for (const event of events) {
     const { extId, oa: payload, location } = mapEvent(event, { poiMap: source.poiMap });
-    if (!payload.timings?.length) { stats.skipped += 1; continue; }
-    if (payload.attendanceMode === 1 && !location) { stats.skipped += 1; continue; }
+    if (!payload.timings?.length) {
+      stats.skipped += 1;
+      log.warn('event skipped: no timings', { extId: extId.value });
+      continue;
+    }
+    if (payload.attendanceMode === 1 && !location) {
+      stats.skipped += 1;
+      log.warn('event skipped: onsite event with no resolvable location', { extId: extId.value });
+      continue;
+    }
     currentIds.add(extId.value);
 
     const imageUrl = payload._imageUrl || null;
@@ -37,7 +52,12 @@ export async function runSync({ source, oa, state, agendaUID, options = {} }) {
     const known = bucket.events[extId.value];
     if (known === hash && !reconcile) { stats.unchanged += 1; continue; }
 
-    if (dryRun) { known ? stats.updated++ : stats.created++; continue; }
+    const action = known ? 'updated' : 'created';
+    if (dryRun) {
+      stats[action] += 1;
+      log.info(`event ${action} (dry-run)`, { extId: extId.value });
+      continue;
+    }
 
     try {
       if (location) {
@@ -50,10 +70,13 @@ export async function runSync({ source, oa, state, agendaUID, options = {} }) {
       }
       await oa.upsertEvent(extId.value, stripAnnotations(payload), imageUrl);
       bucket.events[extId.value] = hash;
-      known ? stats.updated++ : stats.created++;
+      stats[action] += 1;
+      log.info(`event ${action}`, { extId: extId.value });
     } catch (err) {
       stats.errors += 1;
-      console.error(`event ${extId.value}: ${err.message}`);
+      // err.message in the text (the console transport drops meta.error when
+      // other meta keys are present); the Error in meta ships the full stack.
+      log.error(`event upsert failed: ${err.message}`, { extId: extId.value, error: err });
     }
   }
 
@@ -66,6 +89,13 @@ export async function runSync({ source, oa, state, agendaUID, options = {} }) {
     const tooFewToTrust = currentIds.size === 0 || (synced.length > 0 && currentIds.size < synced.length * 0.5);
     if (tooFewToTrust && !reconcile) {
       stats.deletionsSkipped = synced.filter(({ extId }) => !currentIds.has(extId.value)).length;
+      if (stats.deletionsSkipped) {
+        log.warn('deletion safety floor tripped: shrunken source treated as a fetch failure, no deletions performed (--reconcile overrides)', {
+          sourceCount: currentIds.size,
+          syncedCount: synced.length,
+          deletionsSkipped: stats.deletionsSkipped,
+        });
+      }
     } else {
       for (const { extId } of synced) {
         if (!currentIds.has(extId.value)) {
@@ -74,6 +104,7 @@ export async function runSync({ source, oa, state, agendaUID, options = {} }) {
             delete bucket.events[extId.value];
           }
           stats.deleted += 1;
+          log.info(dryRun ? 'event deleted (dry-run)' : 'event deleted: absent from source', { extId: extId.value });
         }
       }
     }

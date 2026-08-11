@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
-import { createAlbiSDK } from '../lib/AlbiSDK.js';
+import logs from '../lib/logger.js';
+import { createSourceSDK } from '../lib/SourceSDK.js';
 import { runSync } from '../lib/syncCore.js';
 import { loadState, saveState } from '../lib/state.js';
 import { EXT_KEY } from '../lib/transform/constants.js';
@@ -20,25 +21,35 @@ const useTest = args.has('--test');
 const agendaUID = useTest ? process.env.TEST_AGENDA_UID : process.env.AGENDA_UID;
 const secret = useTest ? process.env.TEST_API_SECRET : process.env.API_SECRET;
 
-const sdk = createAlbiSDK({ key: process.env.ALBI_KEY, base: process.env.ALBI_API_BASE });
-const source = await sdk.loadAll();
+const log = logs('run');
+const startedAt = Date.now();
+log.info('sync run started', { agendaUID, test: useTest, ...options });
 
-const getToken = createAccessTokenGetter(secret);
-const accessToken = await getToken();
-const ctx = { accessToken, agendaUID };
+try {
+  const sdk = createSourceSDK({ key: process.env.ALBI_KEY, base: process.env.ALBI_API_BASE });
+  const source = await sdk.loadAll();
+  log.info('source loaded', { sourceEvents: source.events.length });
 
-const oa = {
-  upsertLocation: (loc) => setLocation(ctx, loc.extId.key, loc.extId.value, loc.oa).then((l) => l.uid),
-  upsertEvent: async (value, payload, imageUrl) => {
-    const image = imageUrl ? await fetchImage(imageUrl) : null;
-    return setEvent(ctx, EXT_KEY, value, payload, image);
-  },
-  removeEvent: (value) => removeAgendaEvent(ctx, EXT_KEY, value),
-  listSynced: () => listAllAgendaEvents({ secret, agendaUID }, { extKey: EXT_KEY }),
-};
+  const getToken = createAccessTokenGetter(secret);
+  const accessToken = await getToken();
+  const ctx = { accessToken, agendaUID };
 
-const stateFile = process.env.STATE_FILE_PATH || fileURLToPath(new URL('../.sync-state.json', import.meta.url));
-const state = loadState(stateFile);
-const stats = await runSync({ source, oa, state, agendaUID, options });
-if (!options.dryRun) saveState(stateFile, state);
-console.log(JSON.stringify({ agendaUID, options, stats }, null, 2));
+  const oa = {
+    upsertLocation: (loc) => setLocation(ctx, loc.extId.key, loc.extId.value, loc.oa).then((l) => l.uid),
+    upsertEvent: async (value, payload, imageUrl) => {
+      const image = imageUrl ? await fetchImage(imageUrl) : null;
+      return setEvent(ctx, EXT_KEY, value, payload, image);
+    },
+    removeEvent: (value) => removeAgendaEvent(ctx, EXT_KEY, value),
+    listSynced: () => listAllAgendaEvents({ secret, agendaUID }, { extKey: EXT_KEY }),
+  };
+
+  const stateFile = process.env.STATE_FILE_PATH || fileURLToPath(new URL('../.sync-state.json', import.meta.url));
+  const state = loadState(stateFile);
+  const stats = await runSync({ source, oa, state, agendaUID, options });
+  if (!options.dryRun) saveState(stateFile, state);
+  log.info('sync run completed', { agendaUID, durationMs: Date.now() - startedAt, ...stats });
+} catch (err) {
+  log.error(`sync run failed: ${err.message}`, { agendaUID, durationMs: Date.now() - startedAt, error: err });
+  process.exitCode = 1;
+}

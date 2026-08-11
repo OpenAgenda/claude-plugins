@@ -49,10 +49,20 @@ Goal: know exactly what you're mapping before you write a transform.
    `buildTimings` expand them). Pick a stable `extId` for the merged event (the
    smallest member id, or a content hash).
 
+6. **Scraping gap evaluation.** If important fields are missing or degraded in
+   the source data (image, **image credits**, timings, location, title,
+   description, registration information…), check whether the
+   source's *public event pages* carry them: identify the website, find the
+   agenda and event pages, work out how event URLs are built from source-data
+   fields, and diff page content against the data. Follow the "Scraping gap
+   evaluation" checklist in `reference/source-analysis.md`, and bring the
+   resulting gap table to the checkpoint — the user decides whether a scraping
+   enrichment step is worth adding to the pipeline.
+
 `scripts/analyzeSource.js` prints a coverage report (counts, with-image,
 with-location, excluded, **multi-occurrence groups / redundant records**).
-**Checkpoint:** confirm the mapping strategy, the merge decision, and the
-`extId` key before writing transforms.
+**Checkpoint:** confirm the mapping strategy, the merge decision, the
+`extId` key, and the scrape/no-scrape decision before writing transforms.
 
 ---
 
@@ -104,7 +114,13 @@ Goal: a safe, idempotent sync you can run repeatedly.
    map → upsert locations (cached per venue) → upsert events by ext-id → reconcile
    deletions *read back from OpenAgenda* (never from the local registry) → save
    state. Flags: `--dry-run`, `--reconcile`, `--limit=N`.
-3. **Run order:** `--dry-run` → bounded `--limit=5` real run to the **test**
+3. **Logging.** The sync runs unattended; its log trail is the only witness when
+   something breaks weeks later. It must answer "what happened to event X?"
+   without re-running: run start/end lines, a reasoned line for every drop,
+   write, deletion, and error, all keyed by ext-id. The full indications
+   (language-agnostic) are in `reference/logging.md`; for Node implementations
+   use `@openagenda/logs` (already wired in the scaffold via `lib/logger.js`).
+4. **Run order:** `--dry-run` → bounded `--limit=5` real run to the **test**
    agenda → verify images/locations/dates in the admin → full run → run again to
    confirm idempotency (mostly `unchanged`) → Step 4 quality control → promote.
 
@@ -143,6 +159,9 @@ production.
 - `reference/openagenda-api.md` — auth, ext-id upsert, **image upload**, the
   events read-back, schema discovery, required-by-structure fields.
 - `reference/source-analysis.md` — the Step-1 checklist in full.
+- `reference/logging.md` — what to log so issues can be troubleshot later: the
+  four questions the trail must answer, levels, conventions, symptom table.
+  Language-agnostic, plus the `@openagenda/logs` patterns for Node.
 - `reference/quality-control.md` — the Step-4 published-vs-source comparison in
   full (baselines, sample design, checklist, verdicts).
 - `reference/pitfalls.md` — accumulated gotchas (read this first; it will save you
@@ -152,6 +171,9 @@ production.
 
 `scaffold/` is an adapt-and-copy starting point proven by the albigeois sync.
 - Copy verbatim, rarely change: `utils/oa/*`, `lib/state.js`, `lib/syncCore.js`,
-  `lib/transform/{text,media,buildTimings}.js`.
-- Rewrite per source: `lib/SourceSDK.js`, `lib/transform/{mapEvent,mapLocation,
-  constants,filter}.js`, the dataset names in `scripts/*`.
+  `lib/transform/{text,media,buildTimings}.js`, `lib/logger.js` (only its
+  `PREFIX` constant changes per project).
+- Rewrite per source: `lib/SourceSDK.js` (the seam — ships re-exporting
+  `lib/AlbiSDK.js`, the Albi worked example; replace the re-export with your
+  client), `lib/transform/{mapEvent,mapLocation,constants,filter}.js`, the
+  dataset names in `scripts/*`.

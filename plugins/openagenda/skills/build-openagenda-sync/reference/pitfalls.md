@@ -62,6 +62,11 @@ Read this before building. Each entry cost a real debugging session.
   an email).
 - Check field coverage across the WHOLE snapshot, not the first record — the
   first record embedded an address; 70% of the rest did not.
+- **Content pasted from Word/Outlook carries `<style>` blocks** whose CSS text
+  survives naive tag-stripping AND turndown's defaults, leaking
+  `a { text-decoration: none; … }` into published descriptions (seen live on
+  mondonville). Drop `style`/`script` elements WITH their content before any
+  text extraction (`sdk/transform/text.js` does this since v0.1.1).
 - **Decode HTML entities with a real decoder** (`he.decode`), not a hand-rolled
   table — French text is full of `&rsquo;` `&eacute;` `&euro;` `&hellip;` etc. A
   partial table silently leaves `d&rsquo;audace` in the published description.
@@ -70,6 +75,23 @@ Read this before building. Each entry cost a real debugging session.
   x@y.com" inside `price`). Regex-extract from the likely text fields, and as a
   last resort link to the source's public event page (slugified title — verify the
   slug pattern resolves) so every event is actionable.
+
+## Logging (`@openagenda/logs`)
+- `logs.init()` must run BEFORE any `logs('namespace')` call. Namespaced loggers
+  snapshot the transport config at creation — a module-level `const log =
+  logs('sync')` created pre-init logs nowhere. Fix: a dedicated `lib/logger.js`
+  that inits and re-exports; every module imports that, never the lib directly.
+- The `enableDebug` init flag is silently broken with `debug` >= 4.4 (the lib
+  pushes RegExps into `debug.names`; debug 4.4 matches string templates only).
+  Call `debug.enable('<prefix>*')` yourself when `DEBUG` is unset — otherwise a
+  local run prints nothing and looks hung.
+- The console transport DROPS `meta.error` when the meta object has other keys
+  (`{ extId, error }` displays only `{ extId }`). Put `err.message` in the
+  message text AND the `Error` in meta: console stays readable, InsightOps gets
+  the structured error + stack.
+- With `LOGS_TOKEN` set, the InsightOps socket keeps the process alive ~15 s
+  after the last line (inactivity close). Harmless under cron; do NOT
+  `process.exit()` right after logging — you'd lose the unflushed buffer.
 
 ## Tooling
 - Yarn 4 defaults to PnP, which trips Vitest's ESM resolution. Add
