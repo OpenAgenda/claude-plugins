@@ -116,6 +116,12 @@ describe('listAllAgendaEvents', () => {
     expect(String(fetchFn.mock.calls[0][0])).toContain('state[]=2');
     expect(String(fetchFn.mock.calls[1][0])).toContain('after[]=c1');
   });
+  it('returns the full detailed event with includeEvent', async () => {
+    const ev = { uid: 1, title: { fr: 'X' }, extIds: [{ key: 'albi', value: 'a' }] };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ total: 1, events: [ev], after: null }) }));
+    const out = await listAllAgendaEvents({ secret: 'S', agendaUID: '42' }, { extKey: 'albi', includeEvent: true });
+    expect(out).toEqual([{ uid: 1, extId: { key: 'albi', value: 'a' }, event: ev }]);
+  });
 });
 
 describe('getAgendaSchema', () => {

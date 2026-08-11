@@ -57,6 +57,20 @@ For bulk facts (counts, timing totals), the API read-back
 "N source records → M published events" adds up with the merge/skip decisions,
 then do the visual pass on the sample.
 
+## Mechanize the gathering: `scripts/spotCheck.js`
+
+The scaffold ships `scripts/spotCheck.js` (`yarn qc`, `--test` for the test
+agenda) which does the tedious half of all of the above: it replays the sync's
+own merge → filter → map → skip path over the `fixtures/` snapshot, builds the
+edge-biased sample automatically (`tagTraits` marks which risky paths each
+event exercised — adapt it per source), reads the published events back from
+the agenda, runs the bulk reconciliation (with missing/unexpected ext-id
+lists), and writes a `QC.md` skeleton: per sampled event, the published and
+source URLs plus a synced-vs-published field table, followed by an empty
+verdict line. What it deliberately does NOT do is judge — image correctness,
+map-pin placement and text fidelity still need a human (or an agent driving a
+browser) on the actual pages. Flags: `--sample=N` (default 12), `--out=path`.
+
 ## Classify every discrepancy — three verdicts
 - **Sync bug** — the transform or upload dropped/garbled something the source
   provides. Fix, re-run, re-check that event, and log the gotcha in

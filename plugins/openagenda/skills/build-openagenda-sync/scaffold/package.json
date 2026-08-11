@@ -7,6 +7,7 @@
     "download": "node --env-file=.env scripts/downloadFixtures.js",
     "analyze": "node scripts/analyzeSource.js",
     "sync": "node --env-file=.env scripts/sync.js",
+    "qc": "node --env-file=.env scripts/spotCheck.js",
     "test": "vitest run"
   },
   "license": "MIT",

@@ -149,6 +149,12 @@ proves the API accepted the payloads. Full method: `reference/quality-control.md
    issue (report upstream, don't patch the transform), or accepted transform
    choice (document it). Write the result to a short `QC.md` in the project.
 
+The scaffold's `scripts/spotCheck.js` (`yarn qc`) mechanizes steps 2–3's data
+gathering: it builds the edge-biased sample, reads the published events back,
+reconciles the counts, and writes the `QC.md` skeleton with side-by-side field
+tables and URLs — leaving only the judging (step 4) to a human or a
+browser-driving agent.
+
 **Checkpoint:** a human reviews `QC.md` before the sync is promoted to
 production.
 

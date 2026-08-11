@@ -31,8 +31,10 @@ source-specific pieces. Everything here runs and is tested (`yarn test`).
   source references a venue table).
 - `lib/transform/constants.js` — `EXT_KEY`, exclusion lists, category map.
 - `lib/transform/filter.js` — publication/exclusion rules.
-- `scripts/{downloadFixtures,analyzeSource,sync}.js` — change the dataset names
-  and the SDK import; the sync.js adapter wiring is generic.
+- `scripts/{downloadFixtures,analyzeSource,sync,spotCheck}.js` — change the
+  dataset names and the SDK import; the sync.js adapter wiring is generic. In
+  `spotCheck.js` also adapt `tagTraits` (which risky transform paths exist for
+  YOUR source) and the compared fields.
 - If the Step-1 scraping gap evaluation said yes: the scraper is an enrichment
   step in your `SourceSDK.js`, its pages snapshotted into `fixtures/` like every
   other read, and fetched incrementally at sync time (new/changed events only).
@@ -54,9 +56,10 @@ const oa = {
 ## First run
 `yarn install` → `yarn download` → `yarn analyze` → `node --env-file=.env scripts/sync.js --dry-run`
 → `… --limit=5` (to a **test** agenda) → verify in the OA admin → full run → run
-again (idempotency) → quality control (compare published events against the
-source — see the parent skill's `reference/quality-control.md`) → promote to
-production.
+again (idempotency) → quality control: `yarn qc --test` generates `QC.md` (an
+edge-biased sample of published events paired side-by-side with the source —
+see the parent skill's `reference/quality-control.md`), review it and fill in
+the verdicts → promote to production.
 
 ## Logging
 All diagnostics go through `lib/logger.js` (`@openagenda/logs`). Console output

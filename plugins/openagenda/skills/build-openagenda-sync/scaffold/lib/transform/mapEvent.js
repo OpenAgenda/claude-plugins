@@ -7,7 +7,7 @@ import mapLocation from './mapLocation.js';
 const isHttpUrl = (s) => /^https?:\/\/\S+$/i.test(s || '');
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
 
-function slugifyTitle(title) {
+export function slugifyTitle(title) {
   return String(title || '')
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
