@@ -1,6 +1,6 @@
 {
   "name": "@openagenda/claude-plugins",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "OpenAgenda integration SDK + Claude Code plugins (marketplace).",
   "type": "module",
   "exports": {
