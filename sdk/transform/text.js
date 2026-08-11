@@ -16,10 +16,16 @@ function dropNonContent(html) {
 }
 
 // Source fields are not always HTML: plain-text titles and descriptions must
-// not be tag-stripped (a literal "<3" or "<seniors>" would vanish) nor go
+// not be tag-stripped (a literal "<3" or "<SENIORS>" would vanish) nor go
 // through turndown (which collapses their newlines and escapes markdown
-// characters). Only treat input as HTML when it carries a real-looking tag.
-const looksLikeHtml = (s) => /<([a-z][a-z0-9-]*)(\s[^>]*)?\/?>/i.test(s);
+// characters). Only treat input as HTML when it carries a KNOWN element name —
+// a bare tag shape is not enough, plain text quotes angle-bracketed words too.
+const looksLikeHtml = (s) => new RegExp(
+  '</?(p|div|span|br|hr|ul|ol|li|h[1-6]|strong|b|em|i|u|s|a|img|figure|figcaption'
+  + '|table|tbody|thead|tfoot|tr|td|th|caption|blockquote|pre|code|style|script'
+  + '|head|title|meta|link|section|article|header|footer|nav|iframe|font|small'
+  + '|sub|sup|dl|dt|dd|form|label|input|button|video|audio|source)\\b[^>]*>', 'i',
+).test(s);
 
 function truncate(s, maxLength) {
   if (!maxLength || s.length <= maxLength) return s;
