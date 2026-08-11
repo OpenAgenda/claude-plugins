@@ -62,6 +62,11 @@ Read this before building. Each entry cost a real debugging session.
   an email).
 - Check field coverage across the WHOLE snapshot, not the first record — the
   first record embedded an address; 70% of the rest did not.
+- **Content pasted from Word/Outlook carries `<style>` blocks** whose CSS text
+  survives naive tag-stripping AND turndown's defaults, leaking
+  `a { text-decoration: none; … }` into published descriptions (seen live on
+  mondonville). Drop `style`/`script` elements WITH their content before any
+  text extraction (`sdk/transform/text.js` does this since v0.1.1).
 - **Decode HTML entities with a real decoder** (`he.decode`), not a hand-rolled
   table — French text is full of `&rsquo;` `&eacute;` `&euro;` `&hellip;` etc. A
   partial table silently leaves `d&rsquo;audace` in the published description.
