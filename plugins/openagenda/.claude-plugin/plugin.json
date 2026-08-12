@@ -1,6 +1,6 @@
 {
   "name": "openagenda",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Build OpenAgenda data integrations: a guided methodology + battle-tested scaffold for synchronising a data source into one or more OpenAgenda agendas (and, over time, one-shot imports and outward export).",
   "author": {
     "name": "OpenAgenda",
