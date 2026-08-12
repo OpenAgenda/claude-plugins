@@ -19,7 +19,7 @@ agendas, and (over time) one-shot imports and outward export.
   checkpoints, a living `reference/` of OpenAgenda API gotchas and pitfalls, and a
   battle-tested **scaffold** (the OpenAgenda write client, stateful sync core, and
   transforms) you copy into each new project.
-- **Command `/new-oa-sync`** — kick off a new integration from a source.
+- **Command `/oa-new-sync`** — kick off a new integration from a source.
 
 The scaffold is adapt-and-copy: it carries the generic OpenAgenda SDK
 (`utils/oa/*` — token, ext-id upsert, image upload, schema, paginated read),
@@ -33,7 +33,7 @@ source-specific client and mapping.
 plugins/openagenda/                 # the plugin
   .claude-plugin/plugin.json
   skills/build-openagenda-sync/     # SKILL.md + reference/ + scaffold/
-  commands/new-oa-sync.md
+  commands/oa-new-sync.md
 ```
 
 ## Contributing
