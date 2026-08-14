@@ -61,8 +61,12 @@ the source record, the log trail, and the event in the OA admin.
   trail; it is reproducible from the fixtures + transform. On error, the OA
   response body already names the offending field.
 - **Never log secrets** — access tokens, API secrets/keys, auth headers.
-- Production logs ship to **InsightOps (EU)**, where they are queryable with
-  LEQL.
+- **A readable trail is the requirement; a log platform is not.** Wherever the
+  sync runs unattended, something must retain those lines — a process manager's
+  own log files satisfy it. Shipping to a platform (OpenAgenda's is InsightOps
+  EU, queryable with LEQL) buys cross-project search and history beyond local
+  rotation; it is an upgrade to reach for when the project warrants it, not a
+  precondition for running in production.
 
 ## Symptom → what to look for
 

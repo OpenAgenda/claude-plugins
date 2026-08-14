@@ -108,8 +108,14 @@ OA payloads.
 Goal: a safe, idempotent sync you can run repeatedly.
 
 1. **Keys & init.** Record in `.env`: the source read key, the OpenAgenda write
-   secret (`API_SECRET`, `oa_sk_…`), and a **test agenda UID**. Run against the
-   test agenda first; promote to production only after verifying in the OA admin.
+   secret (`API_SECRET`, `oa_sk_…`), and a **test agenda UID** when one exists.
+   A test agenda is the comfortable path, not a precondition: plenty of real
+   projects have none, and refusing to proceed without one blocks work that the
+   bounded ladder in step 4 already makes safe. With one, rehearse there first
+   and promote only after verifying in the OA admin. Without one, run the same
+   ladder against production — `--dry-run`, then `--limit=5`, then verify those
+   five in the admin before going further — and say in the checkpoint that you
+   did so.
 2. **Orchestrator flow** (`lib/syncCore.js`): load state → fetch source → filter →
    map → upsert locations (cached per venue) → upsert events by ext-id → reconcile
    deletions *read back from OpenAgenda* (never from the local registry) → save
@@ -120,9 +126,11 @@ Goal: a safe, idempotent sync you can run repeatedly.
    write, deletion, and error, all keyed by ext-id. The full indications
    (language-agnostic) are in `reference/logging.md`; for Node implementations
    use `@openagenda/logs` (already wired in the scaffold via `lib/logger.js`).
-4. **Run order:** `--dry-run` → bounded `--limit=5` real run to the **test**
-   agenda → verify images/locations/dates in the admin → full run → run again to
-   confirm idempotency (mostly `unchanged`) → Step 4 quality control → promote.
+4. **Run order:** `--dry-run` → bounded `--limit=5` real run (to the **test**
+   agenda if there is one, otherwise to production) → verify images/locations/
+   dates in the admin → full run → run again to confirm idempotency (mostly
+   `unchanged`) → Step 4 quality control → promote. The order is what makes
+   this safe; the choice of agenda only changes how forgiving a mistake is.
 
 **Checkpoint:** the live run is where the real bugs appear (the source's quirks,
 the agenda's real validation). Fix them, and record each one in

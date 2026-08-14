@@ -48,6 +48,27 @@ Read this before building. Each entry cost a real debugging session.
   Retry with fallback coordinates (e.g. the town centre) rather than losing
   every event at that venue.
 
+## Deletion reconcile — the flag that re-enables it
+- The reconcile pass is skipped when `--limit` is set (`if (!limit)` in
+  `syncCore`), because a bounded run has not seen the whole source. **Any other
+  flag that narrows the source set leaves it enabled**, so the sync compares a
+  *whole* published agenda against a *fragment* of the source and proposes to
+  delete the difference. Seen live: a project-specific `--only` filter put 876
+  published events up for deletion; only the safety floor (source shrunk by
+  ≥50% → treat as a fetch failure) held them, and `--reconcile` alongside it
+  would have removed the lot.
+- So: when you add a source-narrowing flag, make it suppress the reconcile too,
+  and treat a safety-floor `warn` as a symptom to explain — never as a
+  resolution.
+
+## Field length caps are per-field, and smaller than they look
+- Values are capped individually and the limits differ: ext-id values at 100
+  chars, `conditions` at 255 — not the 1000 a generic "long text" assumption
+  suggests. A payload truncated to the wrong limit fails the write with
+  `string.toolong` naming the field (26 events lost that way in one run).
+- Truncate to the field's own cap at a word boundary, and read the field name
+  out of the error rather than guessing which value was too long.
+
 ## CKAN sources (Ville d'Albi)
 - Private datasets need the JWT in the `Authorization` header. Resources are JSON
   files reached via `package_show` → `resources[0].url`, not the datastore API.
