@@ -97,6 +97,42 @@ Read this before building. Each entry cost a real debugging session.
   last resort link to the source's public event page (slugified title — verify the
   slug pattern resolves) so every event is actionable.
 
+## Memory: an expensive object built inside a loop
+
+**Symptom.** A pass that works correctly but peaks at gigabytes, and gets slower
+than the work justifies. It survives a small source and dies on a large one —
+OOM-killed halfway through, leaving a half-written pass, which is worse than a
+slow one.
+
+**The case.** A sync peaked at **3 GB**. The cause was not the event volume: it
+was `Intl.DateTimeFormat` being constructed **fresh on every call** inside two
+helpers whose options never varied — about four per occurrence over 35 097
+occurrences, and the build phase walked them twice. **280 780 formatter
+instances, of which exactly 2 were distinct.** Hoisting the two to module load
+(two constants moved, no logic touched):
+
+| | before | after |
+|---|---|---|
+| peak memory | 5 795 MB | **307 MB** |
+| timings phase | 10.7 s | **1.1 s** |
+| output | 2 816 events, 48 758 timings | **identical** |
+
+In production the same pass went from 3.04 GB to 405 MB.
+
+**Why it hides.** Each instance is individually cheap and correct; nothing fails
+a test, and a small fixture never shows it. It only appears once you measure a
+*full* pass — which is why measurement belongs in Step 3, not after a complaint.
+
+**The class, not just the case.** `Intl.*` formatters and collators, compiled
+regexes, schema validators, API clients, timezone databases: cheap to use,
+expensive to construct, trivially constructed hundreds of thousands of times
+inside a `map` over events. Construct once at module scope, or memoise on a key
+that actually varies.
+
+**Prove the output is unchanged** after any such fix — same counts, same ids,
+ideally the same serialised payloads. An optimisation that changes what gets
+published is a bug wearing a performance badge.
+
 ## Logging (`@openagenda/logs`)
 - `logs.init()` must run BEFORE any `logs('namespace')` call. Namespaced loggers
   snapshot the transport config at creation — a module-level `const log =

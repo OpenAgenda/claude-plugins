@@ -132,9 +132,36 @@ Goal: a safe, idempotent sync you can run repeatedly.
    `unchanged`) → Step 4 quality control → promote. The order is what makes
    this safe; the choice of agenda only changes how forgiving a mistake is.
 
+5. **Measure the full pass, then fix what the measurement names.** The first
+   full run is the first moment cost is *observable*; before it, optimising is
+   guesswork and usually wasted. Capture two numbers — **peak RSS** and **wall
+   time per phase** (`/usr/bin/time -v`, or sample `process.memoryUsage().rss`
+   around each phase) — and read them before deciding anything is fine.
+
+   The failure mode that dominates is not an algorithm, it is **an expensive
+   object constructed inside a loop**. A live case: a sync peaked at **3 GB**
+   because `Intl.DateTimeFormat` was built fresh on every call in two functions
+   whose options never varied — **280 780 instances, of which 2 were distinct**.
+   Hoisting them to module load took peak memory from **5 795 MB to 307 MB** and
+   that phase from **10.7 s to 1.1 s**, with byte-identical output. Formatters,
+   regexes, collators, schema validators and API clients all behave this way:
+   cheap to use, expensive to construct, and easy to construct 300 000 times
+   without noticing.
+
+   Two rules keep this from becoming a rabbit hole. **Fix only what the
+   measurement names** — a profile beats an intuition, every time. And **prove
+   the output did not change**: same created/updated/unchanged counts, same
+   event ids, ideally the same serialised payloads. An optimisation that alters
+   output is not an optimisation, it is an undetected bug.
+
+   This is not about speed for its own sake. A pass that peaks at 3 GB is one
+   source-growth away from being OOM-killed halfway through, and a half-written
+   pass is far worse than a slow one.
+
 **Checkpoint:** the live run is where the real bugs appear (the source's quirks,
-the agenda's real validation). Fix them, and record each one in
-`reference/pitfalls.md`.
+the agenda's real validation) **and where the cost of a pass first becomes
+measurable**. Fix both kinds of finding, confirm the output is unchanged after
+any optimisation, and record each one in `reference/pitfalls.md`.
 
 ---
 
