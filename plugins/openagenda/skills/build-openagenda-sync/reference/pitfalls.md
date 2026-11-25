@@ -37,6 +37,9 @@ Read this before building. Each entry cost a real debugging session.
   schema lists no field as mandatory → `location.required`. Skip events with no
   resolvable location instead of erroring on every run.
 - `registration` link values must be real URLs (`link.invalid` otherwise).
+- `canonicalUrl` is hidden in the form and never "mandatory": it gets
+  forgotten. It reads back non-null even when the sync never set it (fallback on
+  the OA page), so check the host, not the presence.
 - Timings must be ≤ 24h each → split multi-day spans per day. Mind the DST
   fall-back day: a 00:00–23:59 local window really lasts 24h59 there and gets
   the whole event rejected (`diffExceeded`) — clamp each timing's real duration.

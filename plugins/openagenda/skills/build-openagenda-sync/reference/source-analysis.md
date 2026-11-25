@@ -47,6 +47,8 @@ The source's public website often carries them.
 - [ ] Work out how event-page URLs are built (numeric id, slug, id+slug…) and
       **verify the pattern resolves from source-data fields** for several events
       — a slugified title that 404s on accented characters is not a pattern.
+      A verified pattern (or a URL field the data already carries) is the
+      event's `canonicalUrl` — record which, and its coverage.
 - [ ] Field-by-field diff: for each field that's missing/degraded in the data,
       is it present on the event page? Check coverage over several pages, not
       one sample. Typical wins: image, **image credits**, timings, location,

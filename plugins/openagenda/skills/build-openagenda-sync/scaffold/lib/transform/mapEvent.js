@@ -23,6 +23,14 @@ function findEmail(event) {
   return null;
 }
 
+// The event's own page on the publisher's website — the source's public event
+// page. Feeds `canonicalUrl` and the registration fallback. Null when the title
+// yields no slug: no page is better than a guessed one.
+export function sourcePageUrl(event) {
+  const slug = slugifyTitle(event.title);
+  return slug ? `${SOURCE_PAGE_BASE}/${slug}` : null;
+}
+
 function buildRegistration(event) {
   const reg = [];
   const link = isHttpUrl(event.reservation_link)
@@ -37,8 +45,8 @@ function buildRegistration(event) {
   }
   // Fallback: always offer the source page so the event is actionable.
   if (!reg.length) {
-    const slug = slugifyTitle(event.title);
-    if (slug) reg.push({ type: 'link', value: `${SOURCE_PAGE_BASE}/${slug}` });
+    const page = sourcePageUrl(event);
+    if (page) reg.push({ type: 'link', value: page });
   }
   return reg;
 }
@@ -67,6 +75,13 @@ export default function mapEvent(event, { lang = 'fr', poiMap } = {}) {
   if (location) oa._location = location.extId;
 
   oa.registration = buildRegistration(event);
+
+  // canonicalUrl: the event's page on its publisher's website (here the city's
+  // agenda page). Sent on every write so reusers credit the source and search
+  // engines index the original. Not an organiser site, not a booking link.
+  // Omitted → OA serves its own page; an OA page sent back is stored as null.
+  const page = sourcePageUrl(event);
+  if (isHttpUrl(page)) oa.canonicalUrl = page;
 
   // Additional fields: sensible defaults, then the per-sub-category correspondence
   // (first matching sub-category wins for these single-value radio fields).

@@ -48,6 +48,9 @@ sees, not the admin form) next to the baseline and check:
 - [ ] **Image** — displays, and is the *right* image for this event
 - [ ] **Registration / links** — resolve (no 404), point at this event's page,
       contact email/phone match the source
+- [ ] **canonicalUrl** — resolves (no 404), is THIS event's page on the
+      publisher's site. An `openagenda.com` value on read-back means nothing
+      was declared (the read falls back on the OA page)
 - [ ] **Additional fields** — populated with the right option label (a field at
       "(Sans valeur)" or with a wrong category is a visible quality gap)
 - [ ] **Price / conditions** — free/paid status and amounts match
