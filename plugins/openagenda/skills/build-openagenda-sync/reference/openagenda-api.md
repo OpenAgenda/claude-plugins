@@ -82,6 +82,33 @@ level** of the event payload, keyed by the field name, with the option's
 - Populate optional additional fields too (see SKILL Step 2): build a
   source-label → option-id map; default sensibly when the source has no signal.
 
+## Canonical address — `canonicalUrl`
+The event's reference page **on its publisher's website**. OpenAgenda shows it
+to reusers as the source to credit (licence attribution) and serves it as the
+event page's `rel="canonical"`. Native, optional, writable through v2 and v3,
+and hidden in the event form by default — so it never shows up as a gap in the
+schema; set it anyway.
+
+```js
+{ "canonicalUrl": "https://www.theatredunord.fr/saison/la-mouette" }
+```
+- **Value:** a full `http(s)` URL, ≤ 1000 chars (`//host/path` is completed with
+  `https:`). Anything else is refused (`canonicalUrl` validation error).
+- **What goes there:** this event's own page on the publisher's site. Not the
+  site's home page, not the agenda listing, not an organiser's site, not a
+  booking page (those belong in `registration`). No page of its own → omit it.
+- **Read:** when nothing is declared, reads return the event's page on its
+  origin agenda (`https://openagenda.com/{originAgendaSlug}/events/{uid}_{slug}`),
+  so a non-null read does NOT prove the sync declared anything — compare the
+  host.
+- **Clear:** send `null`. The ext-id `PUT` is a full replace, so a sync that
+  stops sending the field clears it too.
+- **OpenAgenda's own pages are not stored:** a value pointing at one of the
+  event's OA pages is saved as `null`. A GET-then-PUT that sends the read value
+  back therefore declares nothing by mistake.
+- **Existing syncs:** adding the field changes every payload's content hash, so
+  the next run updates every event once (`updated`, not `unchanged`). Expected.
+
 ## Structural requirements (not flagged as "mandatory")
 - `attendanceMode: 1` (onsite) → requires a `locationUid` (`location.required` else).
 - `attendanceMode: 2` (online) → requires `onlineAccessLink`.

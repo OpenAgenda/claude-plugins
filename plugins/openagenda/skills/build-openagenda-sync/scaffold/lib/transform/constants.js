@@ -38,7 +38,7 @@ export const SUBCATEGORY_TO_OA = {
   '9d0c194a-0a83-42f8-b89c-c081d85882e0': { 'type-devenement': 16, categories: 1 }, // Cinéma
 };
 
-// Public event page on the Ville d'Albi site — used as a registration fallback
-// when the source record carries no contact link/email (the slug is the
-// deburred, hyphenated title; verified to resolve).
+// Public event page on the Ville d'Albi site — the event's `canonicalUrl`, and
+// the registration fallback when the source record carries no contact
+// link/email (the slug is the deburred, hyphenated title; verified to resolve).
 export const SOURCE_PAGE_BASE = 'https://albi.fr/que-faire-a-albi/agenda';

@@ -135,6 +135,7 @@ export function buildComparison({ mapped }, published) {
       p.location?.latitude != null ? `${p.location.latitude}, ${p.location.longitude}` : null],
     ['image', oa._imageUrl, p.image?.filename || (p.image ? 'yes' : null)],
     ['registration', fmtReg(oa.registration), fmtReg(p.registration)],
+    ['canonicalUrl', oa.canonicalUrl, p.canonicalUrl],
     ['conditions', excerpt(ml(oa.conditions)), excerpt(ml(p.conditions))],
     ...ADDITIONAL_FIELD_NAMES.map((f) => [f, oa[f], Array.isArray(p[f]) ? p[f].join(',') : p[f]]),
   ];

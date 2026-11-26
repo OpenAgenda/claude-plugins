@@ -68,6 +68,18 @@ describe('mapEvent', () => {
     const { oa } = mapEvent({ ...EVENT, title: 'Déraisonnable : la bipolarité', email: null, phones: null, reservation_link: null, links: [], price: 'Gratuit' });
     expect(oa.registration).toContainEqual({ type: 'link', value: 'https://albi.fr/que-faire-a-albi/agenda/deraisonnable-la-bipolarite' });
   });
+  it('declares the source event page as canonicalUrl', () => {
+    const { oa } = mapEvent({ ...EVENT, title: 'Déraisonnable : la bipolarité' });
+    expect(oa.canonicalUrl).toBe('https://albi.fr/que-faire-a-albi/agenda/deraisonnable-la-bipolarite');
+  });
+  it('does not use an organiser link as canonicalUrl', () => {
+    const { oa } = mapEvent(EVENT);
+    expect(oa.canonicalUrl).not.toBe('https://www.habitarn.net/');
+  });
+  it('omits canonicalUrl when no source page can be built', () => {
+    const { oa } = mapEvent({ ...EVENT, title: '***' });
+    expect(oa).not.toHaveProperty('canonicalUrl');
+  });
   it('puts the full combined text (short_content + description) in longDescription so nothing is lost', () => {
     const { oa } = mapEvent({ ...EVENT, short_content: '<p>Part one intro.</p>', description: '<p>Part two body.</p>' });
     expect(oa.longDescription.fr).toContain('Part one intro.');

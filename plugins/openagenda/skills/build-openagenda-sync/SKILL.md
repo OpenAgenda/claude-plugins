@@ -59,10 +59,18 @@ Goal: know exactly what you're mapping before you write a transform.
    resulting gap table to the checkpoint — the user decides whether a scraping
    enrichment step is worth adding to the pipeline.
 
+7. **Canonical address.** Every synced event should declare `canonicalUrl`: the
+   event's own page on its publisher's website. OpenAgenda uses it to credit
+   the source (licence attribution) and as the page's `rel="canonical"`. The
+   event-URL pattern worked out in step 6 is usually that value — verify it
+   resolves for several events, and prefer a URL the source data carries
+   outright (a `url`/`permalink` field) over a rebuilt one.
+
 `scripts/analyzeSource.js` prints a coverage report (counts, with-image,
 with-location, excluded, **multi-occurrence groups / redundant records**).
 **Checkpoint:** confirm the mapping strategy, the merge decision, the
-`extId` key, and the scrape/no-scrape decision before writing transforms.
+`extId` key, the `canonicalUrl` source, and the scrape/no-scrape decision
+before writing transforms.
 
 ---
 
@@ -96,7 +104,11 @@ Goal: build map functions against the agenda's *real* contract, not a guess.
    (`attendanceMode: 1`) still *requires* a `locationUid`; an online event
    (`attendanceMode: 2`) requires `onlineAccessLink`. Plan for events that satisfy
    neither — skip them rather than letting OA 400 every run.
-4. Build `mapLocation.js` and `mapEvent.js` driven by the schema.
+4. **Set `canonicalUrl` on every event** that has a page of its own on the
+   publisher's site (rules in `reference/openagenda-api.md`). It is a native
+   field, hidden in the form by default, so the schema's optional flag will not
+   remind you.
+5. Build `mapLocation.js` and `mapEvent.js` driven by the schema.
 
 **Checkpoint:** dry-run the transform over the Step-1 snapshot and eyeball a few
 OA payloads.
@@ -179,7 +191,7 @@ proves the API accepted the payloads. Full method: `reference/quality-control.md
    multi-day timing — plus one plain control event.
 3. **Compare field by field** on the public agenda page (what a visitor sees):
    title, description fidelity, timing count and datetimes, location and map pin,
-   image, links, additional-field values, price.
+   image, links, `canonicalUrl`, additional-field values, price.
 4. **Classify each discrepancy**: sync bug (fix, re-run, re-check), source data
    issue (report upstream, don't patch the transform), or accepted transform
    choice (document it). Write the result to a short `QC.md` in the project.
@@ -198,7 +210,8 @@ production.
 ## Reference (read before Step 2/Step 3)
 
 - `reference/openagenda-api.md` — auth, ext-id upsert, **image upload**, the
-  events read-back, schema discovery, required-by-structure fields.
+  events read-back, schema discovery, required-by-structure fields,
+  `canonicalUrl`.
 - `reference/source-analysis.md` — the Step-1 checklist in full.
 - `reference/logging.md` — what to log so issues can be troubleshot later: the
   four questions the trail must answer, levels, conventions, symptom table.
